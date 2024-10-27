@@ -12,7 +12,7 @@ function App() {
           <Navigation />
         </div>
         {/* <div><HomePage/></div> */}
-        <div><HomePage/></div>
+        <div><Product/></div>
 
 
         <div><Footer/></div>
