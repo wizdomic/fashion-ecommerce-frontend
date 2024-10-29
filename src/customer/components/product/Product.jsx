@@ -24,7 +24,8 @@ import {
 import { mens_kurta } from "../../../data/mens/MensKurta.jsx";
 import ProductCard from "./ProductCard.jsx";
 import { filters, singleFilter, color } from "./FilterData.jsx";
-import FilterListIcon from '@mui/icons-material/FilterList';
+import FilterListIcon from "@mui/icons-material/FilterList";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const sortOptions = [
   { name: "Price: Low to High", href: "#", current: false },
@@ -37,6 +38,40 @@ function classNames(...classes) {
 
 export default function Product() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  //logic for filter
+  const handleFilter = (value, sectionId) => {
+    const searchParams = new URLSearchParams(location.search);
+
+    let filterValue = searchParams.getAll(sectionId);
+    if (filterValue.length > 0 && filterValue[0].split(",").includes(value)) {
+      filterValue = filterValue[0].split(",").filter((item) => item != value);
+
+      if (filterValue.length === 0) {
+        searchParams.delete(sectionId);
+      }
+    } else {
+      filterValue.push(value);
+    }
+
+    //logic for set filter Values path navigate
+    if (filterValue.length > 0) {
+      searchParams.set(sectionId, filterValue.join(","));
+    }
+    const query = searchParams.toString();
+    navigate({ search: `${query}` });
+  };
+
+  //handle navigation for radio buttons
+  const handleRadioFilterChange = (e, sectionId) => {
+    const searchParams = new URLSearchParams(location.search);
+
+    searchParams.set(sectionId, e.target.value);
+    const query = searchParams.toString();
+    navigate({ search: `${query}` });
+  };
 
   return (
     <div className="bg-white">
@@ -190,14 +225,12 @@ export default function Product() {
 
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
               <div>
-               <div className="flex justify-between items-center">
-                <h1 className="text-lg opacity-50 font-bold">Filters</h1>
-                <FilterListIcon/>
-               </div>
+                <div className="flex justify-between items-center py-10">
+                  <h1 className="text-lg opacity-50 font-bold">Filters</h1>
+                  <FilterListIcon />
+                </div>
 
                 <form className="hidden lg:block">
-
-
                   {filters.map((section) => (
                     <Disclosure
                       key={section.id}
@@ -229,6 +262,10 @@ export default function Product() {
                               className="flex items-center"
                             >
                               <input
+                                //adding on change here for filtering
+                                onChange={() =>
+                                  handleFilter(option.value, section.id)
+                                }
                                 defaultValue={option.value}
                                 defaultChecked={option.checked}
                                 id={`filter-${section.id}-${optionIdx}`}
@@ -280,11 +317,15 @@ export default function Product() {
                               className="flex items-center"
                             >
                               <input
-                                defaultValue={option.value}
-                                defaultChecked={option.checked}
+                                // Set to radio type for single selection
+                                type="radio"
+                                name={section.id}
                                 id={`filter-${section.id}-${optionIdx}`}
-                                name={`${section.id}[]`}
-                                type="checkbox"
+                                value={option.value}
+                                defaultChecked={option.checked}
+                                onChange={(e) =>
+                                  handleRadioFilterChange(e, section.id)
+                                }
                                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                               />
                               <label
