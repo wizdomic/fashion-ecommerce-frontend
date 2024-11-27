@@ -9,8 +9,8 @@ import {
 
 import { Avatar, Button, Menu, MenuItem } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
-import {navigation} from "./navigationData";
-
+import { navigation } from "./navigationData";
+import { useNavigate } from "react-router-dom";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -18,10 +18,11 @@ function classNames(...classes) {
 
 export default function Navigation() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const openUserMenu = Boolean(anchorEl);
-
 
   const handleUserClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -38,7 +39,7 @@ export default function Navigation() {
   };
 
   const handleCategoryClick = (category, section, item, close) => {
-    // navigate(`/${category.id}/${section.id}/${item.id}`);
+    navigate(`/${category.id}/${section.id}/${item.id}`);
     close();
   };
 
@@ -228,14 +229,12 @@ export default function Navigation() {
 
               {/* Logo */}
               <div className="ml-4 flex lg:ml-0">
-                
-                  <span className="sr-only">Your Company</span>
-                  <img
-                    src="https://res.cloudinary.com/ddkso1wxi/image/upload/v1675919455/Logo/Copy_of_Zosh_Academy_nblljp.png"
-                    alt="Shopwithzosh"
-                    className="h-8 w-8 mr-2"
-                  />
-                
+                <span className="sr-only">Your Company</span>
+                <img
+                  src="https://res.cloudinary.com/ddkso1wxi/image/upload/v1675919455/Logo/Copy_of_Zosh_Academy_nblljp.png"
+                  alt="Shopwithzosh"
+                  className="h-8 w-8 mr-2"
+                />
               </div>
 
               {/* Flyout menus */}
@@ -387,7 +386,7 @@ export default function Navigation() {
                           cursor: "pointer",
                         }}
                       >
-                       R
+                        R
                       </Avatar>
                       {/* <Button
                         id="basic-button"
@@ -407,12 +406,9 @@ export default function Navigation() {
                           "aria-labelledby": "basic-button",
                         }}
                       >
-                        <MenuItem>
-                          {true?.role === "ROLE_ADMIN"
-                            ? "Admin Dashboard"
-                            : "My Orders"}
-                        </MenuItem>
-                        <MenuItem >Logout</MenuItem>
+                        <MenuItem onClick={handleCloseUserMenu}>Profile</MenuItem>
+                        <MenuItem onClick={()=>navigate("/account/order")}>My Order</MenuItem>
+                        <MenuItem>Logout</MenuItem>
                       </Menu>
                     </div>
                   ) : (
@@ -427,10 +423,12 @@ export default function Navigation() {
 
                 {/* Search */}
                 <div className="flex items-center lg:ml-6">
-                
-                  <p onClick={()=>navigate("/products/search")} className="p-2 text-gray-400 hover:text-gray-500">
+                  <p
+                    onClick={() => navigate("/products/search")}
+                    className="p-2 text-gray-400 hover:text-gray-500"
+                  >
                     <span className="sr-only">Search</span>
-                    
+
                     <MagnifyingGlassIcon
                       className="h-6 w-6"
                       aria-hidden="true"
@@ -440,9 +438,7 @@ export default function Navigation() {
 
                 {/* Cart */}
                 <div className="ml-4 flow-root lg:ml-6">
-                  <Button
-                    className="group -m-2 flex items-center p-2"
-                  >
+                  <Button className="group -m-2 flex items-center p-2">
                     <ShoppingBagIcon
                       className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
                       aria-hidden="true"
