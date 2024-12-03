@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, Popover, Tab, Transition } from "@headlessui/react";
+import AuthModel from "../../auth/AuthModel";
 import {
   Bars3Icon,
   MagnifyingGlassIcon,
@@ -10,7 +11,11 @@ import {
 import { Avatar, Button, Menu, MenuItem } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
 import { navigation } from "./navigationData";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import store from "../../../state/Store";
+import { useDispatch } from "react-redux";
+import { getUser, logout } from "../../../state/auth/Action";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -23,6 +28,11 @@ export default function Navigation() {
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const openUserMenu = Boolean(anchorEl);
+  const jwt = localStorage.getItem("jwt");
+  const auth = useSelector((state) => state.auth);
+
+  const dispatch = useDispatch();
+  const location = useLocation();
 
   const handleUserClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -42,6 +52,30 @@ export default function Navigation() {
     navigate(`/${category.id}/${section.id}/${item.id}`);
     close();
   };
+
+  useEffect(() => {
+    if (jwt) {
+      dispatch(getUser(jwt));
+    }
+  }, [jwt, auth.jwt]);
+
+  useEffect(() => {
+    if (auth.user) {
+      handleClose();
+    }
+    if (location.pathname === "/login" || location.pathname === "/register") {
+      navigate(-1);
+    }
+  }, [auth.user]);
+
+  //handle for logout button
+  const handleLogout = () => {
+    console.log("Dispatching logout...");
+    dispatch(logout());
+    console.log("Closing user menu...");
+    handleCloseUserMenu();
+  };
+
 
   return (
     <div className="bg-white pb-10">
@@ -94,7 +128,7 @@ export default function Navigation() {
                               selected
                                 ? "border-indigo-600 text-indigo-600"
                                 : "border-transparent text-gray-900",
-                              "flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium border-none"
+                              "flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium border-none",
                             )
                           }
                         >
@@ -146,7 +180,6 @@ export default function Navigation() {
                             >
                               {section.name}
                             </p>
-                            {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
                             <ul
                               role="list"
                               aria-labelledby={`${category.id}-${section.id}-heading-mobile`}
@@ -250,7 +283,7 @@ export default function Navigation() {
                                 open
                                   ? "border-indigo-600 text-indigo-600"
                                   : "border-transparent text-gray-700 hover:text-gray-800",
-                                "relative z-10 -mb-px flex items-center border-b-2 pt-px text-sm font-medium transition-colors duration-200 ease-out"
+                                "relative z-10 -mb-px flex items-center border-b-2 pt-px text-sm font-medium transition-colors duration-200 ease-out",
                               )}
                             >
                               {category.name}
@@ -334,7 +367,7 @@ export default function Navigation() {
                                                       category,
                                                       section,
                                                       item,
-                                                      close
+                                                      close,
                                                     )
                                                   }
                                                   className="cursor-pointer hover:text-gray-800"
@@ -371,7 +404,7 @@ export default function Navigation() {
 
               <div className="ml-auto flex items-center">
                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
-                  {true ? (
+                  {auth.user?.firstName ? (
                     <div>
                       <Avatar
                         className="text-white"
@@ -386,7 +419,7 @@ export default function Navigation() {
                           cursor: "pointer",
                         }}
                       >
-                        R
+                        {auth.user?.firstName[0].toUpperCase()}
                       </Avatar>
                       {/* <Button
                         id="basic-button"
@@ -406,9 +439,13 @@ export default function Navigation() {
                           "aria-labelledby": "basic-button",
                         }}
                       >
-                        <MenuItem onClick={handleCloseUserMenu}>Profile</MenuItem>
-                        <MenuItem onClick={()=>navigate("/account/order")}>My Order</MenuItem>
-                        <MenuItem>Logout</MenuItem>
+                        <MenuItem onClick={handleCloseUserMenu}>
+                          Profile
+                        </MenuItem>
+                        <MenuItem onClick={() => navigate("/account/order")}>
+                          My Order
+                        </MenuItem>
+                        <MenuItem onClick={handleLogout}>Logout</MenuItem>
                       </Menu>
                     </div>
                   ) : (
@@ -454,6 +491,8 @@ export default function Navigation() {
           </div>
         </nav>
       </header>
+
+      <AuthModel handleClose={handleClose} open={openAuthModal} />
     </div>
   );
 }
